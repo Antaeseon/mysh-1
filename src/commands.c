@@ -22,7 +22,7 @@ static int is_built_in_command(const char* command_name)
     }
   }
 
-  return -1; // Not found
+  return -1;  // Not found
 }
 
 /*
