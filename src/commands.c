@@ -63,7 +63,7 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
 	pid=fork();
 	char temp[100];
 	char pr[5][30]={{"/usr/loca/bin/"},{"/usr/bin/"},{"/bin/"},{"/usr/sbin/"},{"/sbin/"}};
-	if(pid<0)
+	if(pid<0)//this
 	{
 		fprintf(stderr,"fork failed!");
 		return -1;
@@ -71,7 +71,7 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
 	else if(pid==0)
 	{	
 		
-		if(execv(com->argv[0],com->argv)==-1){
+		if(execv(com->argv[0],com->argv)==-1){ //this
 		for(int i=0;i<5;i++)
 	{
 				strcpy(temp,pr[i]);
