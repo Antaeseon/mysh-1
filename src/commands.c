@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include "commands.h"
 #include "built_in.h"
 
@@ -25,16 +27,14 @@ static int is_built_in_command(const char* command_name)
   return -1;  // Not found
 }
 
-/*
- * Description: Currently this function only handles single built_in commands. You should modify this structure to launch process and offer pipeline functionality.
- */
+
+
 int evaluate_command(int n_commands, struct single_command (*commands)[512])
 {
   if (n_commands > 0) {
     struct single_command* com = (*commands);
 
     assert(com->argc != 0);
-
     int built_in_pos = is_built_in_command(com->argv[0]);
     if (built_in_pos != -1) {
       if (built_in_commands[built_in_pos].command_validate(com->argc, com->argv)) {
@@ -50,8 +50,47 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
     } else if (strcmp(com->argv[0], "exit") == 0) {
       return 1;
     } else {
-      fprintf(stderr, "%s: command not found\n", com->argv[0]);
-      return -1;
+	
+	int background=0;
+	if(strcmp(com->argv[com->argc-1],"&")==0)
+	{
+		background=1;
+		com->argv[com->argc-1]=NULL;
+		(com->argc)--;
+	}
+	
+	pid_t pid;	
+	pid=fork();
+	char temp[100];
+	char pr[5][30]={{"/usr/loca/bin/"},{"/usr/bin/"},{"/bin/"},{"/usr/sbin/"},{"/sbin/"}};
+	if(pid<0)
+	{
+		fprintf(stderr,"fork failed!");
+		return -1;
+	}
+	else if(pid==0)
+	{	
+		
+		if(execv(com->argv[0],com->argv)==-1){
+		for(int i=0;i<5;i++)
+	{
+				strcpy(temp,pr[i]);
+				strcat(temp,com->argv[0]);
+				execv(temp,com->argv);
+			}
+		}
+		fprintf(stderr, "%s: command not found\n", com->argv[0]);
+     		exit(0);
+	}
+	else{
+		if(background==1)
+		{
+		}
+		else{
+			wait(NULL);
+			return 0;
+		}
+	}
     }
   }
 
